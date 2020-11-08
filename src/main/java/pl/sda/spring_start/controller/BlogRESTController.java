@@ -10,8 +10,7 @@ import pl.sda.spring_start.service.PostService;
 import pl.sda.spring_start.service.UserService;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 // klasa mapująca żądania prokołu http - adres lokalny http://localhost:8080
 //@Controller       //- mapuje żądanie i zwraca widok html
@@ -107,17 +106,35 @@ public class BlogRESTController {
     ) {
         return String.format("login : %s \npassword : %s", login, password);
     }
+
     @GetMapping("/posts/byCategory")
     public List<Post> getPostsByCategory(
             @RequestParam("category") Category category
     ){
-        return postService.getPostByCategory(category);
+        return postService.getPostsByCategory(category);
     }
-    @GetMapping("/posts/byCategoryAndAuthor")
+    @GetMapping("/posts/ByCategoryAndAuthor")
     public List<Post> getPostsByCategoryAndAuthor(
             @RequestParam("category") Category category,
-            @RequestParam("author") User author
+            @RequestParam("userId") int userId
     ){
-        return postService.getPostsByCategoryAndAuthor(category, author);
+        if(userService.getUserById(userId).isPresent()) {
+            return postService.getPostsByCategoryAndAuthor(category, userService.getUserById(userId).get());
+        }
+        return new ArrayList<>();
+    }
+    @GetMapping("/posts/keyWordsSearch")
+    public List<Post> getPostsByTitleLikeOrContentLike(String keyWords){
+        Set<Post> postSet = new HashSet<>();
+        for (String keyWord : keyWords.split(",")) {
+            postSet.addAll(postService.getPostsByTitleLikeOrContentLike(keyWord));
+        }
+        List<Post> filteredList = new ArrayList<>();
+        filteredList.addAll(postSet);
+        return filteredList;
+    }
+    @GetMapping("posts/stats")
+    public String getStats(){
+        return postService.getPostsStats();
     }
 }

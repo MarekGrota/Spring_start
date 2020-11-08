@@ -22,10 +22,23 @@ public class PostService {
     public List<Post> getAllPosts(){
         return postRepository.findAll(Sort.by(Sort.Direction.DESC, "dateAdded"));
     }
-    public List<Post> getPostByCategory(Category category){
+    public List<Post> getPostsByCategory(Category category){
         return postRepository.findAllByCategory(category, Sort.by(Sort.Direction.DESC, "dateAdded"));
     }
     public List<Post> getPostsByCategoryAndAuthor(Category category, User author){
-        return  postRepository.findAllByCategoryAndAuthor(category, author, Sort.by(Sort.Direction.DESC,"dateAdded"));
+        return postRepository.findAllByCategoryAndAuthor(category,author,Sort.by(Sort.Direction.DESC, "dateAdded"));
     }
+    public List<Post> getPostsByTitleLikeOrContentLike(String keyWord){
+        return postRepository.findAllByTitleLikeOrContentLike("%"+keyWord+"%", "%"+keyWord+"%");
+    }
+    public String getPostsStats(){
+        String output = "";
+        // IT : 3
+        //DS : 1
+        for (Category category : postRepository.postStatistics().keySet()){
+            output += category.getCategoryName() + " : " + postRepository.postStatistics().get(category) + "\n";
+        }
+        return output;
+    }
+
 }
