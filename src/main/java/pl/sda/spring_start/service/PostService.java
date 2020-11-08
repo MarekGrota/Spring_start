@@ -25,5 +25,7 @@ public class PostService {
     public List<Post> getPostByCategory(Category category){
         return postRepository.findAllByCategory(category, Sort.by(Sort.Direction.DESC, "dateAdded"));
     }
-
+    public List<Post> getPostsByCategoryAndAuthor(Category category, User author){
+        return  postRepository.findAllByCategoryAndAuthor(category, author, Sort.by(Sort.Direction.DESC,"dateAdded"));
+    }
 }
