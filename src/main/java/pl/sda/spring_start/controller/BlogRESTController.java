@@ -107,6 +107,11 @@ public class BlogRESTController {
     ) {
         return String.format("login : %s \npassword : %s", login, password);
     }
-
+    @GetMapping("/posts/byCategory")
+    public List<Post> getPostsByCategory(
+            @RequestParam("category") Category category
+    ){
+        return postService.getPostByCategory(category);
+    }
 
 }
