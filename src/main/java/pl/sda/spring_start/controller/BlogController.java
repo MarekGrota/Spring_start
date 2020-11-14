@@ -61,7 +61,7 @@ public class BlogController {
         }
         // zapisanie nowego posta do db
         postService.addPost(postDto.getTitle(), postDto.getContent(), postDto.getCategory(),
-                userService.getUserById(3).get());  // rozwiązanie na chwilę !!!
+                userService.getUserById(1).get());  // rozwiązanie na chwilę !!!
         return "redirect:/";                // przekierowuje na ades, który zwraca jakiś widok
     }
     @GetMapping("/register")
@@ -72,9 +72,14 @@ public class BlogController {
     @PostMapping("/register")
     public String addUser(
             @Valid @ModelAttribute UserDto userDto,
-            BindingResult bindingResult
+            BindingResult bindingResult,
+            Model model
     ){
         if(bindingResult.hasErrors()){
+            return "addUser";
+        }
+        if (userService.getUserByEmail(userDto.getEmail()).isPresent()){    // istnieje już taki email
+            model.addAttribute("emailError", "E-mail addressis not unique");
             return "addUser";
         }
         userService.registerUser(new User(userDto.getEmail(), userDto.getPassword(),
