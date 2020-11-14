@@ -4,7 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import pl.sda.spring_start.model.Category;
 import pl.sda.spring_start.model.Post;
 import pl.sda.spring_start.service.PostService;
@@ -43,6 +45,15 @@ public class BlogController {
     public String addPost(Model model){     // i przekazanie pustego obiektu Post
         model.addAttribute("post",new Post());
         model.addAttribute("categories", new ArrayList<>(Arrays.asList(Category.values())));
-        return "addPost";
+        return "addPost";                   // tu znajduje się formularz i uzupełniany przez użytkownika
+    }                                       // gdy wprowadza pola do formularza to set-uje pola klasy Post
+    @PostMapping("/addPost")                // przekazanie parametrów z formularza metodą POST
+    public String addPost(
+            @ModelAttribute Post post       // obiekt klasy model przekazuje obiekt post do metody
+    ){
+        // zapisanie nowego posta do db
+        postService.addPost(post.getTitle(), post.getContent(), post.getCategory(),
+                userService.getUserById(3).get()); // rozwiązanie na chwilę!!!
+        return "redirect:/";                // przekierowuje na adres, który zwraca jakiś widok
     }
 }
