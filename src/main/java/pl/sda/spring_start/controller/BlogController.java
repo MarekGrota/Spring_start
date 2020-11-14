@@ -27,25 +27,29 @@ public class BlogController {
     }
     @GetMapping("/")        // na adresie localhost:8080/
     public String home(
-            Model model, Authentication auth    //można z niego wydobyć dane logowania gdy nie jest null
+            Model model,
+            Authentication auth     // można wydobyć dane logowania gdy nie jest null
     ){   // wywołaj metodę home()
         // dodaje atrybut do obiektu model, który może być przekazany do widoku
         // model.addAttribute(nazwaAtrybutu, wartość);
-
         model.addAttribute("posts", postService.getAllPosts());
         model.addAttribute("auth", auth);
         return "index";     // zwracającą nazwę dokumentu html który ma być wyświetlany
     }
     @GetMapping("/posts&{postId}")
-    public String getPost(@PathVariable("postId") int postId, Model model){
+    public String getPost(
+            @PathVariable("postId") int postId, Model model, Authentication auth
+    ){
         Optional<Post> postOptional = postService.getPostById(postId);
         postOptional.ifPresent(post -> model.addAttribute("post", post));
+        model.addAttribute("auth", auth);
         return "post";
     }
     @GetMapping("/addPost")                 // przejście metodą GET na stronę formularze
-    public String addPost(Model model){     // i przekazanie pustego obiektu Post
+    public String addPost(Model model, Authentication auth){     // i przekazanie pustego obiektu Post
         model.addAttribute("postDto", new PostDto());
         model.addAttribute("categories", new ArrayList<>(Arrays.asList(Category.values())));
+        model.addAttribute("auth", auth);
         return "addPost";                   // tu znajduje się formularz i jest uzupłeniany przez użytkownika
         // gdy wprowadza pola do formularza to set-uje pola klasy Post
     }
@@ -63,12 +67,13 @@ public class BlogController {
         }
         // zapisanie nowego posta do db
         postService.addPost(postDto.getTitle(), postDto.getContent(), postDto.getCategory(),
-                userService.getUserById(1).get());  // rozwiązanie na chwilę !!!
+                userService.getUserById(3).get());  // rozwiązanie na chwilę !!!
         return "redirect:/";                // przekierowuje na ades, który zwraca jakiś widok
     }
     @GetMapping("/register")
-    public String addUser(Model model){
+    public String addUser(Model model, Authentication auth){
         model.addAttribute("userDto", new UserDto());
+        model.addAttribute("auth", auth);
         return "addUser";
     }
     @PostMapping("/register")
@@ -80,21 +85,25 @@ public class BlogController {
         if(bindingResult.hasErrors()){
             return "addUser";
         }
-        if (userService.getUserByEmail(userDto.getEmail()).isPresent()){    // istnieje już taki email
-            model.addAttribute("emailError", "E-mail addressis not unique");
+        if(userService.getUserByEmail(userDto.getEmail()).isPresent()){     // istnieje już taki email
+            model.addAttribute("emailError", "e-mail address is not unique");
             return "addUser";
         }
         userService.registerUser(new User(userDto.getEmail(), userDto.getPassword(),
                 LocalDateTime.now(), true));
         return "redirect:/";
     }
-    @GetMapping("/login")       // adres zwracający formularz logowania
-    public String login(){
+    @GetMapping("/login")       // adres zwracający frmularz logowania
+    public String login(Model model, Authentication auth){
+        model.addAttribute("auth", auth);
         return "login";         // zwrócenie szablonu widoku o nazwie login.html
     }
     @GetMapping("/login&error={loginError}")    // adres zwracający formularz logowania gdy wystąpiły błędy logowania
-    public String login(@PathVariable("loginError") Boolean loginError, Model model){
+    public String login(@PathVariable("loginError") Boolean loginError, Model model,
+                        Authentication auth){
+        System.out.println(loginError.getClass());
         model.addAttribute("loginError", loginError);
+        model.addAttribute("auth", auth);
         return "login";
     }
 
