@@ -9,30 +9,30 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 
 import javax.sql.DataSource;
 
-@EnableWebSecurity      // aktywacja metod zabezpieczeń z klasy WebSecurityconfigurerAdapter
+@EnableWebSecurity      // aktywacja metod zabezpieczeń z klasy WebSecurityConfigurerAdapter
 @Configuration          // konfiguracja zabezpieczeń aplikacji
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     // http security - determinuje które adresy będą wymagały określonych uprawnień
     protected void configure(HttpSecurity httpSecurity) throws Exception {
         httpSecurity
-                .authorizeRequests()    // uwwierzytelniaj poniższe żądania http
+                .authorizeRequests()        // uwerzytelniaj poniższe żądania http
                 .antMatchers("/addPost").hasAnyAuthority("ROLE_USER","ROLE_ADMIN")
                 .antMatchers("/posts&**").hasAnyAuthority("ROLE_USER","ROLE_ADMIN")
                 .antMatchers("/deletePost&**").hasAnyAuthority("ROLE_USER","ROLE_ADMIN")
                 .antMatchers("/editPost&**").hasAnyAuthority("ROLE_USER","ROLE_ADMIN")
                 .anyRequest().permitAll()   // każde inne żądanie nie uwierzytelniaj
                 .and()
-                    .csrf().disable()
-                    .formLogin() .loginPage("/login")           // dadres dla żądania typu GET wyświetlający stronę logowania
-                    .usernameParameter("email")                 // nazwa pola w które wprowadzamy email (th:name)
-                    .passwordParameter("password")              // nazwa pola w które wprowadzamy password (th:name)
-                    .loginProcessingUrl("/login_process")       // adres na który wysyłamy dane logowania (th:action)
-                    .failureUrl("/login&error=true")                 // adres na który jesteśmy przekierowani po błędnym logowaniu
-                    .defaultSuccessUrl("/")                     // po poprawnym logowaniu przekierowanie na adres /
+                .csrf().disable()
+                .formLogin().loginPage("/login")    // adres dla żądania GET wyświetlający stronę logowania
+                .usernameParameter("email")         // nazwa pola w kóre wprowadzamy email (th:name)
+                .passwordParameter("password")      // nazwa pola w kóre wprowadzamy password (th:name)
+                .loginProcessingUrl("/login_process")   // adres na który wysyłamy dane logowania (th:action)
+                .failureUrl("/login&error=true")         // adres na który jesteśmy przekierowania po błędnym logowaniu
+                .defaultSuccessUrl("/")             // po porawnym logowaniu przekierowanie na adres /
                 .and()
-                    .logout()                                   // wylogowanie
-                    .logoutUrl("/logout")                       // adres do wylogowania
-                    .logoutSuccessUrl("/");                     // przekierowanie po wylogowaniu
+                .logout()                           // wylogowanie
+                .logoutUrl("/logout")               // adres do wylogowania
+                .logoutSuccessUrl("/");             // przekierowanie po wylogowaniu
     }
     @Autowired
     private DataSource dataSource;
@@ -47,4 +47,5 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .dataSource(dataSource)                                 // obiekt przechowujący wynikowy result set
                 .passwordEncoder(encoderAlgorithm.getPasswordEncoder());// obiekt do szyfrowania hasła
     }
+
 }

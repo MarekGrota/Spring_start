@@ -30,11 +30,11 @@ public class UserService {
     }
 
     public void registerUser(User user){
-        // domyślną rolą przy rejestracji jest USER -> id = 1
+        // domyślną rolą po rejestracji jest USER -> id = 1
         Set<Role> roles = new HashSet<>();
         roles.add(roleRepository.getOne(1));
         user.setRoles(roles);
-        user.setPassword(encoderAlgorithm.getPasswordEncoder().encode(user.getPassword()));
+        user.setPassword(encoderAlgorithm.getPasswordEncoder().encode(user.getPassword())); // szyfrowanie hasła
         userRepository.save(user);          // INSERT INTO user values (?,?,?,?)
     }
     public void activateUser(int userId){   // UPDATE user SET status = 1 WHERE user_id = ?;
