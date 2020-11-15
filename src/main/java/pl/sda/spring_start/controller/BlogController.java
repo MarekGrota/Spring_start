@@ -15,6 +15,7 @@ import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 @Controller     // klasa mapująca url na wywołanie metody i zwracająca widok html
@@ -31,13 +32,27 @@ public class BlogController {
     @GetMapping("/")        // na adresie localhost:8080/
     public String home(
             Model model,
-            Authentication auth     // można wydobyć dane logowania gdy nie jest null
+            Authentication auth    // można wydobyć dane logowania gdy nie jest null
     ) {   // wywołaj metodę home()
         // dodaje atrybut do obiektu model, który może być przekazany do widoku
         // model.addAttribute(nazwaAtrybutu, wartość);
-        model.addAttribute("posts", postService.getAllPosts());
+        model.addAttribute("posts", postService.getAllPosts(0));    // pierwsze 5 postów
         model.addAttribute("auth", userService.getCredentials(auth));
+        model.addAttribute("pagesIndexes", postService.generatePagesIndexes(postService.getAllPosts()));
+        model.addAttribute("pageIndex", 1);
         return "index";     // zwracającą nazwę dokumentu html który ma być wyświetlany
+    }
+    @GetMapping("/page={pageIndex}")
+    public String home(
+            @PathVariable("pageIndex") int pageIndex,
+            Model model,
+            Authentication auth
+    ){
+        model.addAttribute("posts", postService.getAllPosts(pageIndex - 1));
+        model.addAttribute("auth", userService.getCredentials(auth));
+        model.addAttribute("pagesIndexes", postService.generatePagesIndexes(postService.getAllPosts()));
+        model.addAttribute("pageIndex", pageIndex);
+        return "index";
     }
 
     @GetMapping("/posts&{postId}")
@@ -122,14 +137,22 @@ public class BlogController {
     }
 
     @GetMapping("/deletePost&{postId}")
-    public String deletePost(@PathVariable("postId") int postId){
-        postService.deletePostById(postId);
-        return "redirect:/";
+    public String deletePost(@PathVariable("postId") int postId, Model model, Authentication auth) {
+        if (postService.getPostById(postId).isPresent()) {
+            postService.deletePostById(postId);
+            return "redirect:/";
+        }
+        model.addAttribute("errorMessage", "Delete action aborted! There is not post with id = " + postId);
+        model.addAttribute("posts", postService.getAllPosts());
+        model.addAttribute("auth", userService.getCredentials(auth));
+        return "index";
+
     }
+
     @GetMapping("/editPost&{postId}")
     public String updatePost(
-            @PathVariable("postId") Integer postId, Model model, Authentication auth){
-        if(postService.getPostById(postId).isPresent()) {
+            @PathVariable("postId") Integer postId, Model model, Authentication auth) {
+        if (postService.getPostById(postId).isPresent()) {
             Post postToUpdate = postService.getPostById(postId).get();
             PostDto postDto = new PostDto(
                     postToUpdate.getTitle(), postToUpdate.getContent(), postToUpdate.getCategory());
@@ -139,20 +162,24 @@ public class BlogController {
             model.addAttribute("auth", userService.getCredentials(auth));
             return "addPost";
         }
-        return "redirect:/";        // gdy nie ma posta o określonym id przekierowujemy na stronę domową
+        model.addAttribute("errorMessage", "Update action aborted! There is not post with id = " + postId);
+        model.addAttribute("posts", postService.getAllPosts());
+        model.addAttribute("auth", userService.getCredentials(auth));
+        return "index";     // gdy nie ma posta o określonym id przekierowujemy na stronę domową
     }
+
     @PostMapping("/editPost&{postId}")
     public String updatePost(
             @PathVariable("postId") int postId,
             @Valid @ModelAttribute("postDto") PostDto postDto,
             BindingResult bindingResult,
             Model model
-    ){
-        if(bindingResult.hasErrors()){
+    ) {
+        if (bindingResult.hasErrors()) {
             model.addAttribute("categories", new ArrayList<>(Arrays.asList(Category.values())));
             return "addPost";
         }
-        if(postService.editPost(postId,postDto)) {
+        if (postService.editPost(postId, postDto)) {
             return "redirect:/posts&" + postId;
         }
         return "redirect:/";
