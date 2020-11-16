@@ -9,7 +9,7 @@
 <nav th:replace="fragments/navigation.html :: nav"></nav>
 
 <!-- Page Header -->
-<header th:replace="fragments/header.html :: header(title='Michael\'s Blog', subtitle='The best blog in the World')"></header>
+<header th:replace="fragments/header.html :: header(title='Mark\'s Blog', subtitle='The most eXtrime blog in the Universe!')"></header>
 
 <!-- Main Content -->
 <div class="container">
@@ -29,10 +29,10 @@
         <div class="clearfix" th:if="${auth != null}">
           <a th:if="${auth.getAuthorities().toString().toUpperCase().contains('ADMIN') ||
                         auth.getUsername().equals(post.getAuthor().getEmail())}"
-             class="fa fa-trash" aria-hidden="true" th:href="@{'/deletePost&'+${post.getPostId()}}">delete</a>
+             class="fa fa-trash-alt mr-2" aria-hidden="true" th:href="@{'/deletePost&'+${post.getPostId()}}">delete</a>
           <a th:if="${auth.getAuthorities().toString().toUpperCase().contains('ADMIN') ||
                         auth.getUsername().equals(post.getAuthor().getEmail())}"
-             class="fas fa-edit" aria-hidden="true" th:href="@{'/editPost&'+${post.getPostId()}}">edit</a>
+             class="fas fa-pencil-alt" aria-hidden="true" th:href="@{'/editPost&'+${post.getPostId()}}">edit</a>
         </div>
         <hr>
       </div>
