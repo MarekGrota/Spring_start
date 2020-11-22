@@ -27,15 +27,14 @@ public class Post {
             fetch = FetchType.EAGER
     )
     private User author;
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL) // utworzenie tabeli like i relacji tabeli
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(
             name = "likes",
             joinColumns = @JoinColumn(name = "post_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
     private Set<User> likes = new HashSet<>();
-
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL) // utworzenie tabeli like i relacji tabeli
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(
             name = "dislikes",
             joinColumns = @JoinColumn(name = "post_id"),
@@ -50,5 +49,4 @@ public class Post {
         this.category = category;
         this.author = author;
     }
-
 }

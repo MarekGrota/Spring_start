@@ -1,5 +1,6 @@
 package pl.sda.spring_start.controller;
 
+import io.swagger.models.auth.In;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
@@ -18,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Controller     // klasa mapująca url na wywołanie metody i zwracająca widok html
 public class BlogController {
@@ -29,7 +31,6 @@ public class BlogController {
         this.userService = userService;
         this.postService = postService;
     }
-
     @GetMapping("/addDislike&{pageIndex}&{postId}")
     public String addDislike(
             @PathVariable("postId") int postId,

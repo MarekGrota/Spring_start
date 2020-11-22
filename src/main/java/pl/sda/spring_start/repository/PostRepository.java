@@ -9,6 +9,7 @@ import pl.sda.spring_start.model.Post;
 import pl.sda.spring_start.model.User;
 
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post, Integer> {

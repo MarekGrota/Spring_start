@@ -6,11 +6,17 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import pl.sda.spring_start.model.*;
+import pl.sda.spring_start.model.Category;
+import pl.sda.spring_start.model.Post;
+import pl.sda.spring_start.model.PostDto;
+import pl.sda.spring_start.model.User;
 import pl.sda.spring_start.repository.PostRepository;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class PostService {
