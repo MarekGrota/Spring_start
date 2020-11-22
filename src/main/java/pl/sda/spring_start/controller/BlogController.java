@@ -1,6 +1,7 @@
 package pl.sda.spring_start.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
@@ -29,6 +30,25 @@ public class BlogController {
         this.postService = postService;
     }
 
+    @GetMapping("/addDislike&{pageIndex}&{postId}")
+    public String addDislike(
+            @PathVariable("postId") int postId,
+            @PathVariable("pageIndex") Integer pageIndex,
+            Authentication auth){
+        String email = userService.getCredentials(auth).getUsername();
+        postService.addDislike(postId, userService.getUserByEmail(email).get());
+        return "redirect:/page="+pageIndex;
+    }
+    @GetMapping("/addLike&{pageIndex}&{postId}")
+    public String addLike(
+            @PathVariable("postId") int postId,
+            @PathVariable("pageIndex") Integer pageIndex,
+            Authentication auth){
+        String email = userService.getCredentials(auth).getUsername();
+        postService.addLike(postId, userService.getUserByEmail(email).get());
+        return "redirect:/page="+pageIndex;
+    }
+
     @GetMapping("/")        // na adresie localhost:8080/
     public String home(
             Model model,
@@ -36,19 +56,27 @@ public class BlogController {
     ) {   // wywołaj metodę home()
         // dodaje atrybut do obiektu model, który może być przekazany do widoku
         // model.addAttribute(nazwaAtrybutu, wartość);
-        model.addAttribute("posts", postService.getAllPosts(0));    // pierwsze 5 postów
+        model.addAttribute("posts", postService.getAllPosts(0, Sort.Direction.DESC, "dateAdded"));    // pierwsze 5 postów
         model.addAttribute("auth", userService.getCredentials(auth));
         model.addAttribute("pagesIndexes", postService.generatePagesIndexes(postService.getAllPosts()));
         model.addAttribute("pageIndex", 1);
         return "index";     // zwracającą nazwę dokumentu html który ma być wyświetlany
     }
-    @GetMapping("/page={pageIndex}")
+    @GetMapping("/page={pageIndex}&{field}&{sortDirection}")
     public String home(
             @PathVariable("pageIndex") int pageIndex,
+            @PathVariable("field") String field,
+            @PathVariable("sortDirection") String sortDirection,
             Model model,
             Authentication auth
     ){
-        model.addAttribute("posts", postService.getAllPosts(pageIndex - 1));
+        // w sytuacji sortowani po like-ach i dislike-ach
+
+        model.addAttribute("posts",
+                postService.getAllPosts(pageIndex - 1,
+                        sortDirection.equals("ASC") ? Sort.Direction.ASC : Sort.Direction.DESC,
+                        field
+                ));
         model.addAttribute("auth", userService.getCredentials(auth));
         model.addAttribute("pagesIndexes", postService.generatePagesIndexes(postService.getAllPosts()));
         model.addAttribute("pageIndex", pageIndex);

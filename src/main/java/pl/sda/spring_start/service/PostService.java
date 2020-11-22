@@ -6,21 +6,53 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import pl.sda.spring_start.model.Category;
-import pl.sda.spring_start.model.Post;
-import pl.sda.spring_start.model.PostDto;
-import pl.sda.spring_start.model.User;
+import pl.sda.spring_start.model.*;
 import pl.sda.spring_start.repository.PostRepository;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class PostService {
     @Autowired
     PostRepository postRepository;
+
+    public boolean addDislike(int postId, User hater){
+        Optional<Post> postToDislikeOptional = getPostById(postId);
+        if(postToDislikeOptional.isPresent()){                     // sprawdzam czy post istnieje
+            Post postToDislike = postToDislikeOptional.get();
+            // gdy jestem autorem lub już likeowałem tego posta to nie nie mogę hejtować
+            if(postToDislike.getAuthor().equals(hater) || postToDislike.getLikes().contains(hater)){
+                return false;
+            }
+            Set<User> currentDislikes = postToDislike.getDislikes();     // pobieram aktualne dislike-i
+            if(!currentDislikes.add(hater)) {                             // gdy dodawanie zwraca true tzn, że nie byłem hejterem
+                currentDislikes.remove(hater);                          // aktualizuję zbiór dislike-ów
+            }                                                           // gdy byłem hejterem to usuwam dislike ze zbioru
+            postToDislike.setDislikes(currentDislikes);
+            postRepository.save(postToDislike);                    // UPDATE post SET ....
+            return true;
+        }
+        return false;
+    }
+    public boolean addLike(int postId, User follower){
+        Optional<Post> postToLikeOptional = getPostById(postId);
+        if(postToLikeOptional.isPresent()){                     // sprawdzam czy post istnieje
+            Post postToLike = postToLikeOptional.get();
+            // gdy jestem autorem lub już hejtowałem tego posta to nie nie mogę like-ować
+            if(postToLike.getAuthor().equals(follower) || postToLike.getDislikes().contains(follower)){
+                return false;
+            }
+            Set<User> currentLikes = postToLike.getLikes();     // pobieram aktualne like-i
+            if(!currentLikes.add(follower)) {                    // dodaje like-a
+                currentLikes.remove(follower);
+            }
+            postToLike.setLikes(currentLikes);
+            postRepository.save(postToLike);                    // UPDATE post SET ....
+            return true;
+        }
+        return false;
+    }
 
     public boolean editPost(int postId, PostDto postDto) {
         if (getPostById(postId).isPresent()) {
@@ -55,8 +87,8 @@ public class PostService {
         return pagesIndexes;
     }
 
-    public List<Post> getAllPosts(int pageIndex) {
-        Pageable pageable = PageRequest.of(pageIndex, 5, Sort.by(Sort.Direction.DESC, "dateAdded"));
+    public List<Post> getAllPosts(int pageIndex, Sort.Direction sortDirection, String sortFieldName) {
+        Pageable pageable = PageRequest.of(pageIndex, 5, Sort.by(sortDirection, sortFieldName));
         Page<Post> postPage = postRepository.findAll(pageable);
         return postPage.getContent();
     }
