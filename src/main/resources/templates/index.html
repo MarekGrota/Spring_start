@@ -19,8 +19,8 @@
             <div class="clearfix">
                 <a th:text="'DATE DESC'" th:href="@{'/page='+${pageIndex}+'&dateAdded&DESC'}" type="button" class="btn btn-outline-warning waves-effect px-3"></a>
                 <a th:text="'DATE ASC'" th:href="@{'/page='+${pageIndex}+'&dateAdded&ASC'}" type="button" class="btn btn-outline-warning waves-effect px-3"></a>
-                <a th:text="'GRADES DESC'" th:href="@{'/page='+${pageIndex}+'&likes&DESC'}" type="button" class="btn btn-outline-warning waves-effect px-3"></a>
-                <a th:text="'GRADES ASC'" th:href="@{'/page='+${pageIndex}+'&likes&ASC'}" type="button" class="btn btn-outline-warning waves-effect px-3"></a>
+                <a th:text="'GRADES DESC'" th:href="@{'/page='+${pageIndex}+'&result&DESC'}" type="button" class="btn btn-outline-warning waves-effect px-3"></a>
+                <a th:text="'GRADES ASC'" th:href="@{'/page='+${pageIndex}+'&result&ASC'}" type="button" class="btn btn-outline-warning waves-effect px-3"></a>
             </div>
             <!--sortowanie -->
             <div th:if="${errorMessage != null}" th:text="${errorMessage}"
@@ -66,15 +66,11 @@
                 <a th:each="index : ${pagesIndexes}"
                    th:if="${pageIndex == index}"
                    th:text="${index}"
-                   th:href="@{'/page='+${index}}"
-                   type="button"
-                   class="btn btn-outline-secondary waves-effect px-3"></a>
+                   th:href="@{'/page='+${index}+'&'+${field}+'&'+${sortDirection}}" type="button" class="btn btn-outline-secondary waves-effect px-3"></a>
                 <a th:each="index : ${pagesIndexes}"
                    th:if="${pageIndex != index}"
                    th:text="${index}"
-                   th:href="@{'/page='+${index}}"
-                   type="button"
-                   class="btn btn-outline-warning waves-effect px-3"></a>
+                   th:href="@{'/page='+${index}+'&'+${field}+'&'+${sortDirection}}" type="button" class="btn btn-outline-warning waves-effect px-3"></a>
             </div>
         </div>
     </div>

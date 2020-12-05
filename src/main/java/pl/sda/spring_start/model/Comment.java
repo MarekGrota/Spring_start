@@ -1,0 +1,37 @@
+package pl.sda.spring_start.model;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Type;
+
+import javax.persistence.*;
+import java.time.LocalDateTime;
+
+@Entity
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
+public class Comment {
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        private int commentId;
+        @Type(type = "text")    // typ w DB longtext
+        private String message;
+        private LocalDateTime dateAdded = LocalDateTime.now();
+    @ManyToOne(
+            fetch = FetchType.EAGER
+    )
+    private User commentAuthor;
+
+    @ManyToOne(
+            fetch = FetchType.EAGER
+    )
+    private Post rootPost;
+
+    public Comment(String message, User commentAuthor, Post rootPost) {
+        this.message = message;
+        this.commentAuthor = commentAuthor;
+        this.rootPost = rootPost;
+    }
+}

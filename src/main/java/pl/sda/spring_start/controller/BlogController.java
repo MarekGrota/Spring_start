@@ -26,6 +26,7 @@ public class BlogController {
     private UserService userService;
     private PostService postService;
 
+
     @Autowired
     public BlogController(UserService userService, PostService postService) {
         this.userService = userService;
@@ -38,7 +39,7 @@ public class BlogController {
             Authentication auth){
         String email = userService.getCredentials(auth).getUsername();
         postService.addDislike(postId, userService.getUserByEmail(email).get());
-        return "redirect:/page="+pageIndex;
+        return "redirect:/page="+pageIndex + "&dateAdded&DESC";
     }
     @GetMapping("/addLike&{pageIndex}&{postId}")
     public String addLike(
@@ -47,7 +48,7 @@ public class BlogController {
             Authentication auth){
         String email = userService.getCredentials(auth).getUsername();
         postService.addLike(postId, userService.getUserByEmail(email).get());
-        return "redirect:/page="+pageIndex;
+        return "redirect:/page="+pageIndex + "&dateAdded&DESC";
     }
 
     @GetMapping("/")        // na adresie localhost:8080/
@@ -57,6 +58,8 @@ public class BlogController {
     ) {   // wywołaj metodę home()
         // dodaje atrybut do obiektu model, który może być przekazany do widoku
         // model.addAttribute(nazwaAtrybutu, wartość);
+        model.addAttribute("field", "dateAdded");
+        model.addAttribute("sortDirection", Sort.Direction.DESC);
         model.addAttribute("posts", postService.getAllPosts(0, Sort.Direction.DESC, "dateAdded"));    // pierwsze 5 postów
         model.addAttribute("auth", userService.getCredentials(auth));
         model.addAttribute("pagesIndexes", postService.generatePagesIndexes(postService.getAllPosts()));
@@ -72,12 +75,15 @@ public class BlogController {
             Authentication auth
     ){
         // w sytuacji sortowani po like-ach i dislike-ach
-
-        model.addAttribute("posts",
-                postService.getAllPosts(pageIndex - 1,
-                        sortDirection.equals("ASC") ? Sort.Direction.ASC : Sort.Direction.DESC,
-                        field
-                ));
+        if(!field.equals("result")) {   // gdy nie sortuje po resultach
+            model.addAttribute("posts",
+                    postService.getAllPosts(pageIndex - 1,
+                            sortDirection.equals("ASC") ? Sort.Direction.ASC : Sort.Direction.DESC,
+                            field
+                    ));
+        } else {                        // gdy sortujemy po resultach
+            model.addAttribute("posts", postService.getAllPostsOrderByResult(sortDirection, pageIndex - 1));
+        }
         model.addAttribute("auth", userService.getCredentials(auth));
         model.addAttribute("pagesIndexes", postService.generatePagesIndexes(postService.getAllPosts()));
         model.addAttribute("pageIndex", pageIndex);
@@ -91,8 +97,39 @@ public class BlogController {
         Optional<Post> postOptional = postService.getPostById(postId);
         postOptional.ifPresent(post -> model.addAttribute("post", post));
         model.addAttribute("auth", userService.getCredentials(auth));
+        // do wypisania listy comentarzy danego posta
+        postOptional.ifPresent(post ->
+                model.addAttribute("comments", postService.getAllCommentsForPostOrderByDateAddedDesc(post)));
+        // do uzupełnienia w formularzu
+        model.addAttribute("commentDto", new CommentDto());
         return "post";
     }
+    @PostMapping("/comments/addComment&postId={postId}")
+    public String addCommentToPostByUser(
+            @PathVariable("postId") Integer postId,
+            @Valid @ModelAttribute("commentDto") CommentDto commentDto, BindingResult bindingResult,
+            Authentication auth, Model model
+    ){
+        if(bindingResult.hasErrors()) {
+            model.addAttribute("messageError", "Your comment is not valid!");
+            return "redirect:/posts&" + postId;
+        }
+        postService.addCommentToPostByUser(
+                commentDto,
+                postService.getPostById(postId).get(),
+                userService.getUserByEmail(userService.getCredentials(auth).getUsername()).get()
+        );
+        return "redirect:/posts&" + postId;
+    }
+
+    @GetMapping("/comments&delete&{commentId}&{postId}")
+    public String deletePostById(
+            @PathVariable("commentId") Integer commentId, @PathVariable("postId") Integer postId){
+        postService.deleteCommentById(commentId);
+        return "redirect:/posts&"+postId;
+    }
+
+
 
     @GetMapping("/addPost")                 // przejście metodą GET na stronę formularze
     public String addPost(Model model, Authentication auth) {     // i przekazanie pustego obiektu Post
