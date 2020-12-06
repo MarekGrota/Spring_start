@@ -104,15 +104,19 @@ public class BlogController {
         model.addAttribute("commentDto", new CommentDto());
         return "post";
     }
-    @PostMapping("/comments/addComment&postId={postId}")
+    @PostMapping("/comments&addComment&postId={postId}")
     public String addCommentToPostByUser(
             @PathVariable("postId") Integer postId,
             @Valid @ModelAttribute("commentDto") CommentDto commentDto, BindingResult bindingResult,
             Authentication auth, Model model
     ){
         if(bindingResult.hasErrors()) {
-            model.addAttribute("messageError", "Your comment is not valid!");
-            return "redirect:/posts&" + postId;
+            Optional<Post> postOptional = postService.getPostById(postId);
+            postOptional.ifPresent(post -> model.addAttribute("post", post));
+            model.addAttribute("auth", userService.getCredentials(auth));
+            postOptional.ifPresent(post ->
+                    model.addAttribute("comments", postService.getAllCommentsForPostOrderByDateAddedDesc(post)));
+            return "post";
         }
         postService.addCommentToPostByUser(
                 commentDto,
@@ -158,7 +162,7 @@ public class BlogController {
         userDetails.getAuthorities().stream().forEach(o -> System.out.println(o));
         // zapisanie nowego posta do db
         postService.addPost(postDto.getTitle(), postDto.getContent(), postDto.getCategory(),
-                userService.getUserByEmail(loggedEmail).get());  // przypisanie dodawanego posta do zalogowanego użytkownika
+                userService.getUserByEmail(loggedEmail).get(), postDto.getImagePath());  // przypisanie dodawanego posta do zalogowanego użytkownika
         return "redirect:/";                // przekierowuje na ades, który zwraca jakiś widok
     }
 
@@ -221,7 +225,7 @@ public class BlogController {
         if (postService.getPostById(postId).isPresent()) {
             Post postToUpdate = postService.getPostById(postId).get();
             PostDto postDto = new PostDto(
-                    postToUpdate.getTitle(), postToUpdate.getContent(), postToUpdate.getCategory());
+                    postToUpdate.getTitle(), postToUpdate.getContent(), postToUpdate.getCategory(), postToUpdate.getImagePath());
             model.addAttribute("postDto", postDto);
             model.addAttribute("postId", postId);
             model.addAttribute("categories", new ArrayList<>(Arrays.asList(Category.values())));

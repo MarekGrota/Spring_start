@@ -62,20 +62,20 @@ public class BlogRESTController {
     ){
         return userService.getUserByEmail(email).orElse(new User());
     }
-    @PostMapping("/post/addPost")
-    public void addPost(
-            @RequestParam("title") String title,
-            @RequestParam("content") String content,
-            @RequestParam("category") Category category,
-            @RequestParam("userId") int userId
-    ){
-        Optional<User> userOptional = userService.getUserById(userId);
-        if(userOptional.isPresent()){
-            if(userOptional.get().isStatus()){
-                postService.addPost(title, content, category, userOptional.get());
-            }
-        }
-    }
+    //    @PostMapping("/post/addPost")
+//    public void addPost(
+//            @RequestParam("title") String title,
+//            @RequestParam("content") String content,
+//            @RequestParam("category") Category category,
+//            @RequestParam("userId") int userId
+//    ){
+//        Optional<User> userOptional = userService.getUserById(userId);
+//        if(userOptional.isPresent()){
+//            if(userOptional.get().isStatus()){
+//                postService.addPost(title, content, category, null, userOptional.get());
+//            }
+//        }
+//    }
     @GetMapping("/posts")
     public List<Post> getAllPosts(){
         return postService.getAllPosts();
@@ -134,7 +134,7 @@ public class BlogRESTController {
         filteredList.addAll(postSet);
         return filteredList;
     }
-    @GetMapping("posts/stats")
+    @GetMapping("/posts/stats")
     public String getStats(){
         return postService.getPostsStats();
     }
